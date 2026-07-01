@@ -4,8 +4,8 @@ import { useReadingSummary } from "../hooks/useReadingSummary";
 import { READING_STATUS_LABEL } from "../utils/readingStatus";
 
 export default function HomePage() {
-  const { entries } = useAppContext();
-  const summary = useReadingSummary(entries);
+  const { user, entries } = useAppContext();
+  const summary = useReadingSummary(user?.id, entries);
 
   return (
     <div>

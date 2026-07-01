@@ -2,18 +2,25 @@ import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button, NavBar } from "../components";
 import { useAppContext } from "../context/AppContext";
-import { useBookSearch } from "../hooks/useBookSearch";
+import { useBook } from "../hooks/useBook";
 import { READING_STATUS_LABEL } from "../utils/readingStatus";
 import type { ReadingStatus } from "../types";
 
 export default function BookDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const { getBookById } = useBookSearch();
+  const { book, loading } = useBook(id);
   const { addToLibrary } = useAppContext();
   const navigate = useNavigate();
   const [status, setStatus] = useState<ReadingStatus>("WANT_TO_READ");
 
-  const book = id ? getBookById(id) : undefined;
+  if (loading) {
+    return (
+      <div>
+        <NavBar />
+        <p>불러오는 중...</p>
+      </div>
+    );
+  }
 
   if (!book) {
     return (
@@ -24,8 +31,8 @@ export default function BookDetailPage() {
     );
   }
 
-  function handleAdd() {
-    addToLibrary(book!.id, status);
+  async function handleAdd() {
+    await addToLibrary(book!.id, status);
     navigate("/library");
   }
 

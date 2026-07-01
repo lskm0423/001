@@ -1,32 +1,26 @@
-# React + TypeScript + Vite
+# 독서 기록앱
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+읽은 책과 읽고 싶은 책을 등록하고, 독서 상태와 기록(메모/리뷰)을 관리하는 개인용 독서 기록 서비스.
 
-Currently, two official plugins are available:
+- 문서: `docs/PRD_new.md`(제품 요구사항), `ROADMAP_new.md`(개발 로드맵)
+- 프론트엔드: React + Vite + TypeScript (`src/`)
+- 백엔드: Node.js + Express + SQLite (`server/`)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 실행 방법
 
-## React Compiler
+```bash
+# 백엔드 (포트 4000)
+npm install --prefix server
+npm run dev:server
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+# 프론트엔드 (포트 5173, /api 요청은 백엔드로 프록시됨)
+npm install
+npm run dev
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+## 기타 명령어
+
+```bash
+npm run build   # 프론트엔드 타입체크 및 빌드
+npm run lint     # 프론트엔드 린트
+```

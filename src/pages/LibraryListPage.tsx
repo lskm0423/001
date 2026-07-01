@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { List, NavBar, StatusBadge } from "../components";
 import { useAppContext } from "../context/AppContext";
-import { useBookSearch } from "../hooks/useBookSearch";
 import { READING_STATUS_LABEL } from "../utils/readingStatus";
 import type { ReadingStatus } from "../types";
 
@@ -10,7 +9,6 @@ type Filter = ReadingStatus | "ALL";
 
 export default function LibraryListPage() {
   const { entries } = useAppContext();
-  const { getBookById } = useBookSearch();
   const navigate = useNavigate();
   const [filter, setFilter] = useState<Filter>("ALL");
 
@@ -39,21 +37,15 @@ export default function LibraryListPage() {
         items={filteredEntries}
         getKey={(entry) => entry.id}
         emptyMessage="등록된 도서가 없습니다."
-        renderItem={(entry) => {
-          const book = getBookById(entry.bookId);
-          return (
-            <div
-              className="book-card"
-              onClick={() => navigate(`/library/${entry.id}`)}
-            >
-              <div>
-                <div className="book-card-title">{book?.title}</div>
-                <div className="book-card-author">{book?.author}</div>
-              </div>
-              <StatusBadge status={entry.status} />
+        renderItem={(entry) => (
+          <div className="book-card" onClick={() => navigate(`/library/${entry.id}`)}>
+            <div>
+              <div className="book-card-title">{entry.bookTitle}</div>
+              <div className="book-card-author">{entry.bookAuthor}</div>
             </div>
-          );
-        }}
+            <StatusBadge status={entry.status} />
+          </div>
+        )}
       />
     </div>
   );

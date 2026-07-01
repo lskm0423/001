@@ -1,27 +1,37 @@
-import { useState } from "react";
-import type { LibraryEntry, ReadingStatus } from "../types";
+import { useEffect, useState } from "react";
+import type { LibraryEntryWithBook, ReadingStatus } from "../types";
+import { apiGet, apiPatch, apiPost } from "../lib/api";
 
-export function useLibrary(initialEntries: LibraryEntry[] = []) {
-  const [entries, setEntries] = useState<LibraryEntry[]>(initialEntries);
+export function useLibrary(userId: string | undefined) {
+  const [entries, setEntries] = useState<LibraryEntryWithBook[]>([]);
 
-  function addToLibrary(bookId: string, status: ReadingStatus) {
-    const entry: LibraryEntry = {
-      id: `entry-${Date.now()}`,
+  useEffect(() => {
+    if (!userId) {
+      setEntries([]);
+      return;
+    }
+    apiGet<LibraryEntryWithBook[]>(`/api/library?userId=${userId}`).then(setEntries);
+  }, [userId]);
+
+  async function addToLibrary(bookId: string, status: ReadingStatus) {
+    if (!userId) return;
+    const entry = await apiPost<LibraryEntryWithBook>("/api/library", {
+      userId,
       bookId,
       status,
-      addedAt: new Date().toISOString(),
-    };
+    });
     setEntries((prev) => [...prev, entry]);
     return entry;
   }
 
-  function updateStatus(entryId: string, status: ReadingStatus) {
-    setEntries((prev) =>
-      prev.map((entry) => (entry.id === entryId ? { ...entry, status } : entry)),
-    );
+  async function updateStatus(entryId: string, status: ReadingStatus) {
+    const updated = await apiPatch<LibraryEntryWithBook>(`/api/library/${entryId}`, {
+      status,
+    });
+    setEntries((prev) => prev.map((entry) => (entry.id === entryId ? updated : entry)));
   }
 
-  function getEntryById(entryId: string): LibraryEntry | undefined {
+  function getEntryById(entryId: string): LibraryEntryWithBook | undefined {
     return entries.find((entry) => entry.id === entryId);
   }
 

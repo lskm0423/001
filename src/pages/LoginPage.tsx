@@ -11,7 +11,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  function handleSubmit(e: FormEvent) {
+  async function handleSubmit(e: FormEvent) {
     e.preventDefault();
 
     if (!isValidEmail(email)) {
@@ -24,8 +24,12 @@ export default function LoginPage() {
     }
 
     setError("");
-    login(email, password);
-    navigate("/home");
+    try {
+      await login(email, password);
+      navigate("/home");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "로그인에 실패했습니다.");
+    }
   }
 
   return (

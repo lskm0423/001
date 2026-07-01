@@ -6,3 +6,8 @@ export interface LibraryEntry {
   status: ReadingStatus;
   addedAt: string;
 }
+
+export interface LibraryEntryWithBook extends LibraryEntry {
+  bookTitle: string;
+  bookAuthor: string;
+}

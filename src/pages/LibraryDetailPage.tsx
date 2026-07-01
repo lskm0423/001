@@ -2,16 +2,15 @@ import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { Button, NavBar } from "../components";
 import { useAppContext } from "../context/AppContext";
-import { useBookSearch } from "../hooks/useBookSearch";
+import { useReadingRecords } from "../hooks/useReadingRecords";
 import { formatDate } from "../utils/date";
 import { READING_STATUS_LABEL } from "../utils/readingStatus";
 import type { ReadingStatus } from "../types";
 
 export default function LibraryDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const { getEntryById, updateStatus, getRecordsByEntry, addRecord } =
-    useAppContext();
-  const { getBookById } = useBookSearch();
+  const { getEntryById, updateStatus } = useAppContext();
+  const { records, addRecord } = useReadingRecords(id);
   const [content, setContent] = useState("");
 
   const entry = id ? getEntryById(id) : undefined;
@@ -25,20 +24,17 @@ export default function LibraryDetailPage() {
     );
   }
 
-  const book = getBookById(entry.bookId);
-  const records = getRecordsByEntry(entry.id);
-
   function handleAddRecord() {
     if (content.trim() === "") return;
-    addRecord(entry!.id, content.trim());
+    addRecord(content.trim());
     setContent("");
   }
 
   return (
     <div>
       <NavBar />
-      <h2>{book?.title}</h2>
-      <p>{book?.author}</p>
+      <h2>{entry.bookTitle}</h2>
+      <p>{entry.bookAuthor}</p>
 
       <div className="form-field">
         <label htmlFor="status">읽기 상태</label>

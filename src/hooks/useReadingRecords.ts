@@ -1,23 +1,27 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { ReadingRecord } from "../types";
+import { apiGet, apiPost } from "../lib/api";
 
-export function useReadingRecords(initialRecords: ReadingRecord[] = []) {
-  const [records, setRecords] = useState<ReadingRecord[]>(initialRecords);
+export function useReadingRecords(libraryEntryId: string | undefined) {
+  const [records, setRecords] = useState<ReadingRecord[]>([]);
 
-  function addRecord(libraryEntryId: string, content: string) {
-    const record: ReadingRecord = {
-      id: `record-${Date.now()}`,
-      libraryEntryId,
-      content,
-      createdAt: new Date().toISOString(),
-    };
+  useEffect(() => {
+    if (!libraryEntryId) {
+      setRecords([]);
+      return;
+    }
+    apiGet<ReadingRecord[]>(`/api/library/${libraryEntryId}/records`).then(setRecords);
+  }, [libraryEntryId]);
+
+  async function addRecord(content: string) {
+    if (!libraryEntryId) return;
+    const record = await apiPost<ReadingRecord>(
+      `/api/library/${libraryEntryId}/records`,
+      { content },
+    );
     setRecords((prev) => [...prev, record]);
     return record;
   }
 
-  function getRecordsByEntry(libraryEntryId: string): ReadingRecord[] {
-    return records.filter((record) => record.libraryEntryId === libraryEntryId);
-  }
-
-  return { records, addRecord, getRecordsByEntry };
+  return { records, addRecord };
 }

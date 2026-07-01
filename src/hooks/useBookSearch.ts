@@ -1,29 +1,26 @@
 import { useState } from "react";
 import type { Book } from "../types";
-import { MOCK_BOOKS } from "../mocks/books";
+import { apiGet } from "../lib/api";
 
 export function useBookSearch() {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<Book[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  function search() {
-    const keyword = query.trim().toLowerCase();
+  async function search() {
+    const keyword = query.trim();
     if (keyword === "") {
       setResults([]);
       return;
     }
-    setResults(
-      MOCK_BOOKS.filter(
-        (book) =>
-          book.title.toLowerCase().includes(keyword) ||
-          book.author.toLowerCase().includes(keyword),
-      ),
-    );
+    setLoading(true);
+    try {
+      const books = await apiGet<Book[]>(`/api/books?q=${encodeURIComponent(keyword)}`);
+      setResults(books);
+    } finally {
+      setLoading(false);
+    }
   }
 
-  function getBookById(id: string): Book | undefined {
-    return MOCK_BOOKS.find((book) => book.id === id);
-  }
-
-  return { query, setQuery, results, search, getBookById };
+  return { query, setQuery, results, search, loading };
 }

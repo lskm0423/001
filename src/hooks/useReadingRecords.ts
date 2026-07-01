@@ -1,8 +1,8 @@
 import { useState } from "react";
 import type { ReadingRecord } from "../types";
 
-export function useReadingRecords() {
-  const [records, setRecords] = useState<ReadingRecord[]>([]);
+export function useReadingRecords(initialRecords: ReadingRecord[] = []) {
+  const [records, setRecords] = useState<ReadingRecord[]>(initialRecords);
 
   function addRecord(libraryEntryId: string, content: string) {
     const record: ReadingRecord = {

@@ -1,8 +1,8 @@
 import { useState } from "react";
 import type { LibraryEntry, ReadingStatus } from "../types";
 
-export function useLibrary() {
-  const [entries, setEntries] = useState<LibraryEntry[]>([]);
+export function useLibrary(initialEntries: LibraryEntry[] = []) {
+  const [entries, setEntries] = useState<LibraryEntry[]>(initialEntries);
 
   function addToLibrary(bookId: string, status: ReadingStatus) {
     const entry: LibraryEntry = {

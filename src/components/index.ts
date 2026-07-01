@@ -4,3 +4,4 @@ export { default as BookCard } from "./BookCard";
 export { default as StatusBadge } from "./StatusBadge";
 export { default as List } from "./List";
 export { default as Modal } from "./Modal";
+export { default as NavBar } from "./NavBar";

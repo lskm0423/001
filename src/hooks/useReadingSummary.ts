@@ -14,9 +14,11 @@ export function useReadingSummary(userId: string | undefined, refreshKey: unknow
       setSummary({ WANT_TO_READ: 0, READING: 0, DONE: 0 });
       return;
     }
-    apiGet<Record<ReadingStatus, number>>(`/api/summary?userId=${userId}`).then(
-      setSummary,
-    );
+    apiGet<Record<ReadingStatus, number>>(`/api/summary?userId=${userId}`)
+      .then(setSummary)
+      .catch(() => {
+        setSummary({ WANT_TO_READ: 0, READING: 0, DONE: 0 });
+      });
   }, [userId, refreshKey]);
 
   return summary;

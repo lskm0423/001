@@ -5,6 +5,7 @@ import SearchPage from "./pages/SearchPage";
 import BookDetailPage from "./pages/BookDetailPage";
 import LibraryListPage from "./pages/LibraryListPage";
 import LibraryDetailPage from "./pages/LibraryDetailPage";
+import NotFoundPage from "./pages/NotFoundPage";
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
       <Route path="/books/:id" element={<BookDetailPage />} />
       <Route path="/library" element={<LibraryListPage />} />
       <Route path="/library/:id" element={<LibraryDetailPage />} />
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
 }

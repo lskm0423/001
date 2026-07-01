@@ -10,7 +10,9 @@ export function useReadingRecords(libraryEntryId: string | undefined) {
       setRecords([]);
       return;
     }
-    apiGet<ReadingRecord[]>(`/api/library/${libraryEntryId}/records`).then(setRecords);
+    apiGet<ReadingRecord[]>(`/api/library/${libraryEntryId}/records`)
+      .then(setRecords)
+      .catch(() => setRecords([]));
   }, [libraryEntryId]);
 
   async function addRecord(content: string) {

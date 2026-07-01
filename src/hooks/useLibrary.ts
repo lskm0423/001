@@ -4,13 +4,19 @@ import { apiGet, apiPatch, apiPost } from "../lib/api";
 
 export function useLibrary(userId: string | undefined) {
   const [entries, setEntries] = useState<LibraryEntryWithBook[]>([]);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     if (!userId) {
       setEntries([]);
       return;
     }
-    apiGet<LibraryEntryWithBook[]>(`/api/library?userId=${userId}`).then(setEntries);
+    setError("");
+    apiGet<LibraryEntryWithBook[]>(`/api/library?userId=${userId}`)
+      .then(setEntries)
+      .catch((err) => {
+        setError(err instanceof Error ? err.message : "서재 목록을 불러오지 못했습니다.");
+      });
   }, [userId]);
 
   async function addToLibrary(bookId: string, status: ReadingStatus) {
@@ -35,5 +41,5 @@ export function useLibrary(userId: string | undefined) {
     return entries.find((entry) => entry.id === entryId);
   }
 
-  return { entries, addToLibrary, updateStatus, getEntryById };
+  return { entries, error, addToLibrary, updateStatus, getEntryById };
 }

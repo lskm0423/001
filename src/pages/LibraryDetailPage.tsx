@@ -1,17 +1,16 @@
 import { useState } from "react";
 import { useParams } from "react-router-dom";
-import { Button, NavBar } from "../components";
+import { Button, NavBar, StatusSelect } from "../components";
 import { useAppContext } from "../context/AppContext";
 import { useReadingRecords } from "../hooks/useReadingRecords";
 import { formatDate } from "../utils/date";
-import { READING_STATUS_LABEL } from "../utils/readingStatus";
-import type { ReadingStatus } from "../types";
 
 export default function LibraryDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { getEntryById, updateStatus } = useAppContext();
   const { records, addRecord } = useReadingRecords(id);
   const [content, setContent] = useState("");
+  const [error, setError] = useState("");
 
   const entry = id ? getEntryById(id) : undefined;
 
@@ -24,10 +23,24 @@ export default function LibraryDetailPage() {
     );
   }
 
-  function handleAddRecord() {
+  async function handleStatusChange(status: Parameters<typeof updateStatus>[1]) {
+    setError("");
+    try {
+      await updateStatus(entry!.id, status);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "상태를 변경하지 못했습니다.");
+    }
+  }
+
+  async function handleAddRecord() {
     if (content.trim() === "") return;
-    addRecord(content.trim());
-    setContent("");
+    setError("");
+    try {
+      await addRecord(content.trim());
+      setContent("");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "기록을 저장하지 못했습니다.");
+    }
   }
 
   return (
@@ -38,17 +51,7 @@ export default function LibraryDetailPage() {
 
       <div className="form-field">
         <label htmlFor="status">읽기 상태</label>
-        <select
-          id="status"
-          value={entry.status}
-          onChange={(e) => updateStatus(entry.id, e.target.value as ReadingStatus)}
-        >
-          {Object.entries(READING_STATUS_LABEL).map(([value, label]) => (
-            <option key={value} value={value}>
-              {label}
-            </option>
-          ))}
-        </select>
+        <StatusSelect id="status" value={entry.status} onChange={handleStatusChange} />
       </div>
 
       <h3>독서 기록</h3>
@@ -60,6 +63,7 @@ export default function LibraryDetailPage() {
         />
         <Button onClick={handleAddRecord}>기록 저장</Button>
       </div>
+      {error && <p className="form-error">{error}</p>}
 
       <ul className="list">
         {records.length === 0 && <li className="list-empty">작성된 기록이 없습니다.</li>}

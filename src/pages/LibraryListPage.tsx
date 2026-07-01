@@ -8,7 +8,7 @@ import type { ReadingStatus } from "../types";
 type Filter = ReadingStatus | "ALL";
 
 export default function LibraryListPage() {
-  const { entries } = useAppContext();
+  const { entries, error } = useAppContext();
   const navigate = useNavigate();
   const [filter, setFilter] = useState<Filter>("ALL");
 
@@ -33,6 +33,7 @@ export default function LibraryListPage() {
           </button>
         ))}
       </div>
+      {error && <p className="form-error">{error}</p>}
       <List
         items={filteredEntries}
         getKey={(entry) => entry.id}

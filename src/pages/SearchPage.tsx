@@ -3,7 +3,7 @@ import { Button, Input, List, NavBar } from "../components";
 import { useBookSearch } from "../hooks/useBookSearch";
 
 export default function SearchPage() {
-  const { query, setQuery, results, search } = useBookSearch();
+  const { query, setQuery, results, search, error } = useBookSearch();
   const navigate = useNavigate();
 
   return (
@@ -21,6 +21,7 @@ export default function SearchPage() {
         />
         <Button onClick={search}>검색</Button>
       </div>
+      {error && <p className="form-error">{error}</p>}
       <List
         items={results}
         getKey={(book) => book.id}

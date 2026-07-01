@@ -1,9 +1,8 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Button, NavBar } from "../components";
+import { Button, NavBar, StatusSelect } from "../components";
 import { useAppContext } from "../context/AppContext";
 import { useBook } from "../hooks/useBook";
-import { READING_STATUS_LABEL } from "../utils/readingStatus";
 import type { ReadingStatus } from "../types";
 
 export default function BookDetailPage() {
@@ -12,6 +11,7 @@ export default function BookDetailPage() {
   const { addToLibrary } = useAppContext();
   const navigate = useNavigate();
   const [status, setStatus] = useState<ReadingStatus>("WANT_TO_READ");
+  const [error, setError] = useState("");
 
   if (loading) {
     return (
@@ -32,8 +32,13 @@ export default function BookDetailPage() {
   }
 
   async function handleAdd() {
-    await addToLibrary(book!.id, status);
-    navigate("/library");
+    setError("");
+    try {
+      await addToLibrary(book!.id, status);
+      navigate("/library");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "서재에 추가하지 못했습니다.");
+    }
   }
 
   return (
@@ -44,18 +49,9 @@ export default function BookDetailPage() {
       <p>{book.description}</p>
       <div className="form-field">
         <label htmlFor="status">읽기 상태</label>
-        <select
-          id="status"
-          value={status}
-          onChange={(e) => setStatus(e.target.value as ReadingStatus)}
-        >
-          {Object.entries(READING_STATUS_LABEL).map(([value, label]) => (
-            <option key={value} value={value}>
-              {label}
-            </option>
-          ))}
-        </select>
+        <StatusSelect id="status" value={status} onChange={setStatus} />
       </div>
+      {error && <p className="form-error">{error}</p>}
       <Button onClick={handleAdd}>내 서재에 추가</Button>
     </div>
   );

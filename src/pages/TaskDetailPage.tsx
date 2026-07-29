@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useParams } from "react-router-dom";
-import { Button, Card, Input, NavBar, ProgressBar, Table } from "../components";
+import { Button, Card, Field, Input, MemberSelect, NavBar, ProgressBar, Table } from "../components";
 import { useAppContext } from "../context/AppContext";
 import { useTaskResourceSummary } from "../hooks/useResourceSummary";
 import { formatDate, formatDateRange } from "../utils/date";
@@ -11,6 +11,7 @@ export default function TaskDetailPage() {
   const {
     getTaskById,
     members,
+    membersError,
     getMemberById,
     getAssignmentsByTask,
     addAssignment,
@@ -42,44 +43,52 @@ export default function TaskDetailPage() {
     );
   }
 
-  function handleAssign() {
+  async function handleAssign() {
     const hours = Number(assignHours);
     if (!assignMemberId || !isPositiveNumber(hours)) {
       setAssignError("팀원과 배정 시간을 올바르게 입력해주세요.");
       return;
     }
     if (!task) return;
-    addAssignment({
-      taskId: task.id,
-      memberId: assignMemberId,
-      allocatedHours: hours,
-      startDate: task.plannedStartDate,
-      endDate: task.plannedEndDate,
-    });
-    setAssignMemberId("");
-    setAssignHours("");
-    setAssignError("");
+    try {
+      await addAssignment({
+        taskId: task.id,
+        memberId: assignMemberId,
+        allocatedHours: hours,
+        startDate: task.plannedStartDate,
+        endDate: task.plannedEndDate,
+      });
+      setAssignMemberId("");
+      setAssignHours("");
+      setAssignError("");
+    } catch (err) {
+      setAssignError(err instanceof Error ? err.message : "인력을 배정하지 못했습니다.");
+    }
   }
 
-  function handleAddEntry() {
+  async function handleAddEntry() {
     const hours = Number(entryHours);
     if (!entryMemberId || !entryDate || !isPositiveNumber(hours)) {
       setEntryError("팀원, 날짜, 실제 투입 시간을 올바르게 입력해주세요.");
       return;
     }
     if (!task) return;
-    addActualEntry({
-      taskId: task.id,
-      memberId: entryMemberId,
-      date: entryDate,
-      actualHours: hours,
-      note: entryNote,
-    });
-    setEntryMemberId("");
-    setEntryDate("");
-    setEntryHours("");
-    setEntryNote("");
-    setEntryError("");
+    try {
+      await addActualEntry({
+        taskId: task.id,
+        memberId: entryMemberId,
+        date: entryDate,
+        actualHours: hours,
+        note: entryNote,
+      });
+      setEntryMemberId("");
+      setEntryDate("");
+      setEntryHours("");
+      setEntryNote("");
+      setEntryError("");
+    } catch (err) {
+      setEntryError(err instanceof Error ? err.message : "실적을 저장하지 못했습니다.");
+    }
   }
 
   return (
@@ -87,6 +96,7 @@ export default function TaskDetailPage() {
       <NavBar />
       <h2>{task.name}</h2>
       <p>{formatDateRange(task.plannedStartDate, task.plannedEndDate)}</p>
+      {membersError && <p className="form-error">{membersError}</p>}
 
       <Card title="계획 대비 실적">
         <p>
@@ -105,31 +115,23 @@ export default function TaskDetailPage() {
             { key: "hours", header: "배정 시간", render: (a) => `${a.allocatedHours}h` },
           ]}
         />
-        <div className="form-field">
-          <label htmlFor="assign-member">팀원</label>
-          <select
+        <Field label="팀원" htmlFor="assign-member">
+          <MemberSelect
             id="assign-member"
+            members={members}
             value={assignMemberId}
-            onChange={(e) => setAssignMemberId(e.target.value)}
-          >
-            <option value="">선택</option>
-            {members.map((member) => (
-              <option key={member.id} value={member.id}>
-                {member.name}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="form-field">
-          <label htmlFor="assign-hours">배정 시간</label>
+            onChange={setAssignMemberId}
+          />
+        </Field>
+        <Field label="배정 시간" htmlFor="assign-hours">
           <Input
             id="assign-hours"
             type="number"
             value={assignHours}
             onChange={(e) => setAssignHours(e.target.value)}
           />
-        </div>
-        {assignError && <div className="form-error">{assignError}</div>}
+        </Field>
+        {assignError && <p className="form-error">{assignError}</p>}
         <Button onClick={handleAssign}>배정 추가</Button>
       </Card>
 
@@ -145,44 +147,34 @@ export default function TaskDetailPage() {
             { key: "note", header: "메모", render: (e) => e.note },
           ]}
         />
-        <div className="form-field">
-          <label htmlFor="entry-member">팀원</label>
-          <select
+        <Field label="팀원" htmlFor="entry-member">
+          <MemberSelect
             id="entry-member"
+            members={members}
             value={entryMemberId}
-            onChange={(e) => setEntryMemberId(e.target.value)}
-          >
-            <option value="">선택</option>
-            {members.map((member) => (
-              <option key={member.id} value={member.id}>
-                {member.name}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="form-field">
-          <label htmlFor="entry-date">일자</label>
+            onChange={setEntryMemberId}
+          />
+        </Field>
+        <Field label="일자" htmlFor="entry-date">
           <Input
             id="entry-date"
             type="date"
             value={entryDate}
             onChange={(e) => setEntryDate(e.target.value)}
           />
-        </div>
-        <div className="form-field">
-          <label htmlFor="entry-hours">투입 시간</label>
+        </Field>
+        <Field label="투입 시간" htmlFor="entry-hours">
           <Input
             id="entry-hours"
             type="number"
             value={entryHours}
             onChange={(e) => setEntryHours(e.target.value)}
           />
-        </div>
-        <div className="form-field">
-          <label htmlFor="entry-note">메모</label>
+        </Field>
+        <Field label="메모" htmlFor="entry-note">
           <Input id="entry-note" value={entryNote} onChange={(e) => setEntryNote(e.target.value)} />
-        </div>
-        {entryError && <div className="form-error">{entryError}</div>}
+        </Field>
+        {entryError && <p className="form-error">{entryError}</p>}
         <Button onClick={handleAddEntry}>실적 추가</Button>
       </Card>
     </div>

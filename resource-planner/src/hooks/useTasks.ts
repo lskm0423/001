@@ -1,12 +1,21 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { Task } from "../types";
-import { MOCK_TASKS } from "../data/mockData";
+import { apiGet, apiPost } from "../lib/api";
 
 export function useTasks() {
-  const [tasks, setTasks] = useState<Task[]>(MOCK_TASKS);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [error, setError] = useState("");
 
-  function addTask(input: Omit<Task, "id">) {
-    const task: Task = { ...input, id: crypto.randomUUID() };
+  useEffect(() => {
+    apiGet<Task[]>("/api/tasks")
+      .then(setTasks)
+      .catch((err) => {
+        setError(err instanceof Error ? err.message : "작업 목록을 불러오지 못했습니다.");
+      });
+  }, []);
+
+  async function addTask(input: Omit<Task, "id">) {
+    const task = await apiPost<Task>("/api/tasks", input);
     setTasks((prev) => [...prev, task]);
     return task;
   }
@@ -19,5 +28,5 @@ export function useTasks() {
     return tasks.find((task) => task.id === taskId);
   }
 
-  return { tasks, addTask, getTasksByProject, getTaskById };
+  return { tasks, tasksError: error, addTask, getTasksByProject, getTaskById };
 }

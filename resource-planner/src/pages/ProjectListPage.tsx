@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button, Input, Modal, NavBar, Table } from "../components";
+import { Button, Field, Input, Modal, NavBar, Table } from "../components";
 import { useAppContext } from "../context/AppContext";
 import { PROJECT_STATUS_LABEL } from "../utils/projectStatus";
 import { formatDateRange } from "../utils/date";
@@ -8,7 +8,7 @@ import { isNonEmpty } from "../utils/validation";
 
 export default function ProjectListPage() {
   const navigate = useNavigate();
-  const { projects, addProject } = useAppContext();
+  const { projects, projectsError, addProject } = useAppContext();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -24,20 +24,25 @@ export default function ProjectListPage() {
     setError("");
   }
 
-  function handleSubmit() {
+  async function handleSubmit() {
     if (!isNonEmpty(name) || !startDate || !endDate) {
       setError("프로젝트명과 기간을 입력해주세요.");
       return;
     }
-    addProject({ name, description, startDate, endDate, status: "planned" });
-    resetForm();
-    setOpen(false);
+    try {
+      await addProject({ name, description, startDate, endDate, status: "planned" });
+      resetForm();
+      setOpen(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "프로젝트를 등록하지 못했습니다.");
+    }
   }
 
   return (
     <div>
       <NavBar />
       <h2>프로젝트 목록</h2>
+      {projectsError && <p className="form-error">{projectsError}</p>}
       <Button onClick={() => setOpen(true)}>프로젝트 등록</Button>
       <Table
         items={projects}
@@ -52,37 +57,33 @@ export default function ProjectListPage() {
       />
       <Modal open={open} onClose={() => setOpen(false)}>
         <h3>프로젝트 등록</h3>
-        <div className="form-field">
-          <label htmlFor="project-name">프로젝트명</label>
+        <Field label="프로젝트명" htmlFor="project-name">
           <Input id="project-name" value={name} onChange={(e) => setName(e.target.value)} />
-        </div>
-        <div className="form-field">
-          <label htmlFor="project-description">설명</label>
+        </Field>
+        <Field label="설명" htmlFor="project-description">
           <Input
             id="project-description"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
           />
-        </div>
-        <div className="form-field">
-          <label htmlFor="project-start">시작일</label>
+        </Field>
+        <Field label="시작일" htmlFor="project-start">
           <Input
             id="project-start"
             type="date"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
           />
-        </div>
-        <div className="form-field">
-          <label htmlFor="project-end">종료일</label>
+        </Field>
+        <Field label="종료일" htmlFor="project-end">
           <Input
             id="project-end"
             type="date"
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
           />
-        </div>
-        {error && <div className="form-error">{error}</div>}
+        </Field>
+        {error && <p className="form-error">{error}</p>}
         <Button onClick={handleSubmit}>저장</Button>
       </Modal>
     </div>

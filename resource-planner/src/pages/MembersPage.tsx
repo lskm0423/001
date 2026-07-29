@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { Button, Input, Modal, NavBar, Table } from "../components";
+import { Button, Field, Input, Modal, NavBar, Table } from "../components";
 import { useAppContext } from "../context/AppContext";
 import { isNonEmpty } from "../utils/validation";
 
 export default function MembersPage() {
-  const { members, addMember, assignments, actualEntries } = useAppContext();
+  const { members, membersError, addMember, assignments, actualEntries } = useAppContext();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [role, setRole] = useState("");
@@ -16,20 +16,25 @@ export default function MembersPage() {
     setError("");
   }
 
-  function handleSubmit() {
+  async function handleSubmit() {
     if (!isNonEmpty(name) || !isNonEmpty(role)) {
       setError("이름과 역할을 입력해주세요.");
       return;
     }
-    addMember({ name, role });
-    resetForm();
-    setOpen(false);
+    try {
+      await addMember({ name, role });
+      resetForm();
+      setOpen(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "팀원을 등록하지 못했습니다.");
+    }
   }
 
   return (
     <div>
       <NavBar />
       <h2>팀원 관리</h2>
+      {membersError && <p className="form-error">{membersError}</p>}
       <Button onClick={() => setOpen(true)}>팀원 등록</Button>
       <Table
         items={members}
@@ -58,15 +63,13 @@ export default function MembersPage() {
       />
       <Modal open={open} onClose={() => setOpen(false)}>
         <h3>팀원 등록</h3>
-        <div className="form-field">
-          <label htmlFor="member-name">이름</label>
+        <Field label="이름" htmlFor="member-name">
           <Input id="member-name" value={name} onChange={(e) => setName(e.target.value)} />
-        </div>
-        <div className="form-field">
-          <label htmlFor="member-role">역할</label>
+        </Field>
+        <Field label="역할" htmlFor="member-role">
           <Input id="member-role" value={role} onChange={(e) => setRole(e.target.value)} />
-        </div>
-        {error && <div className="form-error">{error}</div>}
+        </Field>
+        {error && <p className="form-error">{error}</p>}
         <Button onClick={handleSubmit}>저장</Button>
       </Modal>
     </div>

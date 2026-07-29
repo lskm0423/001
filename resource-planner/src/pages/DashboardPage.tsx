@@ -6,12 +6,13 @@ import { PROJECT_STATUS_LABEL } from "../utils/projectStatus";
 
 export default function DashboardPage() {
   const navigate = useNavigate();
-  const { projects, tasks, actualEntries } = useAppContext();
+  const { projects, projectsError, tasks, actualEntries } = useAppContext();
 
   return (
     <div>
       <NavBar />
       <h2>대시보드</h2>
+      {projectsError && <p className="form-error">{projectsError}</p>}
       {projects.length === 0 ? (
         <div className="list-empty">등록된 프로젝트가 없습니다.</div>
       ) : (

@@ -1,8 +1,10 @@
 export { default as Button } from "./Button";
 export { default as Input } from "./Input";
 export { default as Card } from "./Card";
+export { default as Field } from "./Field";
 export { default as ProgressBar } from "./ProgressBar";
 export { default as Table } from "./Table";
+export { default as MemberSelect } from "./MemberSelect";
 export { default as Modal } from "./Modal";
 export { default as Timeline } from "./Timeline";
 export { default as NavBar } from "./NavBar";

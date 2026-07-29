@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Button, Card, Input, Modal, NavBar, ProgressBar, Table, Timeline } from "../components";
+import { Button, Card, Field, Input, Modal, NavBar, ProgressBar, Table, Timeline } from "../components";
 import { useAppContext } from "../context/AppContext";
 import { useProjectResourceSummary } from "../hooks/useResourceSummary";
 import { TASK_STATUS_LABEL } from "../utils/projectStatus";
@@ -10,7 +10,7 @@ import { isNonEmpty, isPositiveNumber } from "../utils/validation";
 export default function ProjectDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { getProjectById, tasks, addTask, actualEntries } = useAppContext();
+  const { getProjectById, tasks, tasksError, addTask, actualEntries } = useAppContext();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [plannedStartDate, setPlannedStartDate] = useState("");
@@ -39,22 +39,26 @@ export default function ProjectDetailPage() {
     setError("");
   }
 
-  function handleSubmit() {
+  async function handleSubmit() {
     const hours = Number(plannedHours);
     if (!isNonEmpty(name) || !plannedStartDate || !plannedEndDate || !isPositiveNumber(hours)) {
       setError("작업명, 기간, 계획 투입 시간을 올바르게 입력해주세요.");
       return;
     }
-    addTask({
-      projectId: id ?? "",
-      name,
-      plannedStartDate,
-      plannedEndDate,
-      plannedHours: hours,
-      status: "planned",
-    });
-    resetForm();
-    setOpen(false);
+    try {
+      await addTask({
+        projectId: id ?? "",
+        name,
+        plannedStartDate,
+        plannedEndDate,
+        plannedHours: hours,
+        status: "planned",
+      });
+      resetForm();
+      setOpen(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "작업을 등록하지 못했습니다.");
+    }
   }
 
   return (
@@ -90,6 +94,7 @@ export default function ProjectDetailPage() {
       </Card>
 
       <h3>작업 목록</h3>
+      {tasksError && <p className="form-error">{tasksError}</p>}
       <Button onClick={() => setOpen(true)}>작업 등록</Button>
       <Table
         items={projectTasks}
@@ -110,38 +115,34 @@ export default function ProjectDetailPage() {
 
       <Modal open={open} onClose={() => setOpen(false)}>
         <h3>작업 등록</h3>
-        <div className="form-field">
-          <label htmlFor="task-name">작업명</label>
+        <Field label="작업명" htmlFor="task-name">
           <Input id="task-name" value={name} onChange={(e) => setName(e.target.value)} />
-        </div>
-        <div className="form-field">
-          <label htmlFor="task-start">계획 시작일</label>
+        </Field>
+        <Field label="계획 시작일" htmlFor="task-start">
           <Input
             id="task-start"
             type="date"
             value={plannedStartDate}
             onChange={(e) => setPlannedStartDate(e.target.value)}
           />
-        </div>
-        <div className="form-field">
-          <label htmlFor="task-end">계획 종료일</label>
+        </Field>
+        <Field label="계획 종료일" htmlFor="task-end">
           <Input
             id="task-end"
             type="date"
             value={plannedEndDate}
             onChange={(e) => setPlannedEndDate(e.target.value)}
           />
-        </div>
-        <div className="form-field">
-          <label htmlFor="task-hours">계획 투입 시간</label>
+        </Field>
+        <Field label="계획 투입 시간" htmlFor="task-hours">
           <Input
             id="task-hours"
             type="number"
             value={plannedHours}
             onChange={(e) => setPlannedHours(e.target.value)}
           />
-        </div>
-        {error && <div className="form-error">{error}</div>}
+        </Field>
+        {error && <p className="form-error">{error}</p>}
         <Button onClick={handleSubmit}>저장</Button>
       </Modal>
     </div>
